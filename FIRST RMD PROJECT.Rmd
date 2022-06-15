@@ -1,0 +1,131 @@
+---
+title: "cyclist 2"
+author: "Esther"
+date: '2022-05-30'
+output:
+  pdf_document: default
+   latex_engine:xelatex
+  
+---
+
+
+```{r include=FALSE}
+## install important packages
+install.packages("tidyverse")
+install.packages("lubridate")
+install.packages("skimr")
+```
+
+
+```{r include=FALSE}
+##load packages
+library(tidyverse)
+library(lubridate)
+library(skimr)
+```
+
+
+```{r include=FALSE}
+## import csv files into R 
+Jan_2021 <- read.csv("C:\\Users\\Esther Godday\\Documents\\data analysis learning excel file\\cyclicist data. CSV\\January 2021\\202101-divvy-tripdata.csv")
+april_2021 <- read.csv("C:\\Users\\Esther Godday\\Documents\\data analysis learning excel file\\cyclicist data. CSV\\April 2021\\202104-divvy-tripdata.csv")
+may_2021 <- read.csv("C:\\Users\\Esther Godday\\Documents\\data analysis learning excel file\\cyclicist data. CSV\\May 2021\\202105-divvy-tripdata.csv")
+june_2021 <- read.csv("C:\\Users\\Esther Godday\\Documents\\data analysis learning excel file\\cyclicist data. CSV\\June 2021\\202106-divvy-tripdata.csv")
+july_2021 <- read.csv("C:\\Users\\Esther Godday\\Documents\\data analysis learning excel file\\cyclicist data. CSV\\July 2021\\202107-divvy-tripdata.csv")
+august_2021 <- read.csv("C:\\Users\\Esther Godday\\Documents\\data analysis learning excel file\\cyclicist data. CSV\\August 2021\\202108-divvy-tripdata.csv")
+september_2021 <- read.csv("C:\\Users\\Esther Godday\\Documents\\data analysis learning excel file\\cyclicist data. CSV\\September 2021\\202109-divvy-tripdata.csv")
+october_2021 <- read.csv("C:\\Users\\Esther Godday\\Documents\\data analysis learning excel file\\cyclicist data. CSV\\October 2021\\202110-divvy-tripdata.csv")
+november_2021 <- read.csv("C:\\Users\\Esther Godday\\Documents\\data analysis learning excel file\\cyclicist data. CSV\\November 2021\\202111-divvy-tripdata.csv")
+december_2021 <- read.csv("C:\\Users\\Esther Godday\\Documents\\data analysis learning excel file\\cyclicist data. CSV\\December 2021\\202112-divvy-tripdata.csv")
+```
+
+
+
+```{r include=FALSE}
+
+## merge the files into a single data frame
+trips_1 <- rbind(Jan_2021, april_2021, may_2021, june_2021, july_2021, august_2021, september_2021, october_2021,mnovember_2021, december_2021)
+```
+
+
+
+```{r}
+## cleaning the data 
+  ## removing empty cells
+trips_1[trips_1==""]<-NA
+```
+
+
+```{r}
+cleaned_trips <- trips_1[complete.cases(trips_1), ] 
+head(cleaned_trips)
+
+```
+
+
+```{r include=FALSE}
+cleaned_trips$diff_in_mins <- as.numeric(difftime(cleaned_trips$ended_at, cleaned_trips$started_at, units =c("mins")))
+as_tibble(cleaned_trips)
+
+```
+
+```{r}
+## create weekday column
+install.packages("lubridate")
+library(lubridate)
+cleaned_trips$day_of_week= strftime(cleaned_trips$started_at,'%A')       ## Start time as weekday
+as_tibble(cleaned_trips$day_of_week)
+```
+
+```{r}
+## further analysis
+cleaned_trips %>%
+  group_by(day_of_week, ) %>%
+  summarize(mean(diff_in_mins))
+```
+
+```{r}
+total_rides <- cleaned_trips %>%
+  group_by(member_casual) %>%
+  summarize(count = n(), .groups="drop")
+```
+
+```{r}
+cleaned_trips %>% 
+  summarize(mean(diff_in_mins))
+```
+
+```{r}
+mean(cleaned_trips$diff_in_mins)                 #straight average (total ride length / rides)
+median(cleaned_trips$diff_in_mins)               #midpoint number in the ascending array of ride lengths
+max(cleaned_trips$diff_in_mins)                  #longest ride
+min(cleaned_trips$-(C(diff_in_mins) )                 #shortest ride
+
+```
+```{r}
+
+cleaned_trips %>%
+  summarize(mode(cleaned_trips$day_of_week))
+```
+```{r}
+## plot graphs to show the differences betweer member and casaul riders
+
+install.packages("ggplot2")
+library(ggplot2)
+```
+
+```{r}
+ggplot(cleaned_trips) +geom_bar(mapping = aes(x =day_of_week, fill = rideable_type)) + facet_wrap(~member_casual) + theme(axis.text.x=element_text(angle =45, hjust =1))
+
+```
+
+```{r}
+ggplot(cleaned_trips) +geom_bar(mapping = aes(x =day_of_week, fill = member_casual))
+```
+
+
+```{r}
+pdf(file = "cleaned_trips.pdf")
+
+```
+
